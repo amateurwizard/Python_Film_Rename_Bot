@@ -26,8 +26,7 @@ def movie_rename(file_name):
         print("File not accessible or doesn't exist")
     finally:
         file = open(renaming_history_file_name, "a+")
-        file.write(file_name + " \n")
-    file.close()
+        file.write("Input: " + file_name + " \n")
 
     print("Input: " + file_name)
 
@@ -79,6 +78,8 @@ def movie_rename(file_name):
     # open_bracket_index = file_name.index(opening_bracket)
     # closing_bracket_index = file_name.index(closing_bracket)
     # file_name_copy = file_name
+    file.write("Output: " + file_name + " \n")
+    file.close()
     print("Finished: " + file_name + "\n")
     return file_name
 
