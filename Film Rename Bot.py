@@ -13,7 +13,10 @@ regex_resolutions = re.compile(r'.*([1-2][0-9]{3}[p] )')     # Using Regular exp
 
 def movie_rename(file_name):
     renaming_history_file_name = "Film Rename Bot History.txt"
-    special_characters = ("(", ")", "[", "]", "  ", ":", "_", ".", "-")
+    special_characters = ("(", ")", "[", "]", ":", "_", ".", " - ", "-", "  ")
+    bad_metadata = {" A ": " a ", " Of ": " of ", " And ": " and ", " The ": " the ", "X26": "x26", "H26": "x26",
+                    "Im ": "I'm ", "St ": "St. ", "WEB DL": "Web-DL", "WEBRip": "WebRip", "BluRay": "Blu-ray",
+                    "Blu ray": "Blu-ray", "eztv re": "eztv.re", "a K a": "A.K.A."}
     # opening_bracket = special_characters[3]
     # closing_bracket = special_characters[4]
 
@@ -30,41 +33,38 @@ def movie_rename(file_name):
 
     file_name, file_extension = os.path.splitext(file_name)     # Remove and save file extension.
 
-    for x in special_characters:        # Remove certain characters
+    for x in special_characters:        # Replace certain characters with spaces.
         file_name = file_name.replace(x, " ")
 
-    file_name = file_name.replace(" A ", " a ").replace(" Of ", " of ").replace(" And ", " and ")\
-        .replace(" The ", " the ").replace("X26", "x26").replace("H26", "x26").replace("Im ", "I'm ")\
-        .replace("St ", "St. ").replace("WEB DL ", "Web-DL ").replace("BluRay ", "Blu-ray ")\
-        .replace("Blu ray ", "Blu-ray ").replace("eztv re", "eztv.re")
+    for key, value in bad_metadata.items():     # Replace broken metadata
+        file_name = file_name.replace(key, value)
 
     audio_found = re.search(regex_audio, file_name)     # Search for broken audio format in file name.
-    resolution_found = re.search(regex_resolutions, file_name)     # Search for resolution item in file name.
-    year_discovered = re.search(regex_year, file_name)      # Search for year in file name.
-    anomaly_found = re.search(regex_anomaly, file_name)     # Search for misplaced item in file name.
-
     if audio_found:     # Fixing the naming of audio if it is found in a broken state.
         sound_format = audio_found.group(1).strip().replace(" ", ".")
         print("Found Sound Format: " + sound_format)
         file_name = file_name.replace(audio_found.group(1), sound_format + " ")
 
+    resolution_found = re.search(regex_resolutions, file_name)     # Search for resolution item in file name.
     if resolution_found:        # Putting a square bracket in front of the resolution if it is found.
         resolution = resolution_found.group(1).strip()
         print("Found Resolution: " + resolution)
         file_name = file_name.replace(resolution_found.group(1), "[" + resolution + " ")
 
+    year_discovered = re.search(regex_year, file_name)      # Search for year in file name.
     if year_discovered:     # Padding the year if it's found with parentheses.
         year = year_discovered.group(1).strip()
         print("Found Year: " + year)
         file_name = file_name.replace(year_discovered.group(1), " (" + year + ")")
 
+    anomaly_found = re.search(regex_anomaly, file_name)     # Search for misplaced item in file name.
     if anomaly_found:       # Removing any anomalies found between the year and start of metadata.
         anomaly = anomaly_found.group(2)
         print("Found Anomaly: " + anomaly)
         file_name = file_name.replace(anomaly_found.group(1), ") [") + " " + anomaly
 
     while file_name[-1] == " ":     # Remove trailing whitespaces.
-        if file_name[-1].isalpha():
+        if file_name[-1].isalnum():
             break
         file_name = file_name[:-1]
 
