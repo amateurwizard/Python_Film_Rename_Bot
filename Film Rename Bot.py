@@ -16,7 +16,8 @@ def movie_rename(file_name):
     special_characters = (") [", "(", ")", "[", "]", ":", "_", ".", " - ", "-", "  ")
     distorted_data = {" A ": " a ", " Of ": " of ", " And ": " and ", " The ": " the ", "X26": "x26", "H26": "x26",
                       "Im ": "I'm ", "St ": "St. ", "WEB DL": "Web-DL", "WEBRip": "WebRip", "BluRay": "Blu-ray",
-                      "Blu ray": "Blu-ray", "eztv re": "eztv.re", "a K a": "A.K.A.", "10-bit": "10bit"}
+                      "Blu ray": "Blu-ray", "bluray": "Blu-ray", "eztv re": "eztv.re", "a K a": "A.K.A.",
+                      "10-bit": "10bit"}
     # opening_bracket = special_characters[3]
     # closing_bracket = special_characters[4]
 
@@ -65,11 +66,14 @@ def movie_rename(file_name):
     while file_name[-1] == " ":  # Remove trailing whitespaces.
         if file_name[-1].isalnum():
             break
-        file_name = file_name[:-1]
+        else:
+            file_name = file_name[:-1]
 
     while "  " in file_name:  # Removing double spaces in the file name.
         if "  " not in file_name:
             break
+        else:
+            file_name.replace("  ", " ")
 
     file_name = file_name.replace(")[", ") [")  # Adjusting the spacing between year and metadata.
 
