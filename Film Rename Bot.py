@@ -6,9 +6,9 @@ import time
 # Last Update: 2021/07/31
 
 regex_audio = re.compile(r'.*([2-7] [0-2][ ])')  # Using Regular expression to fix audio
-regex_year = re.compile(r'.*( [1-2][0-9]{3} )')  # Using Regular expression to find the year
-regex_anomaly = re.compile(r'.*([)](.*.)[\[])')  # Using Regular expression to find the anomaly
 regex_resolutions = re.compile(r'.*([1-2][0-9]{3}[p] )')  # Using Regular expression to find the resolution
+regex_year = re.compile(r'.*( [1-2][0-9]{3} )')  # Using Regular expression to find the year
+regex_anomaly = re.compile(r'.*([)] (.*.) [\[])')  # Using Regular expression to find the anomaly
 
 
 def movie_rename(file_name):
@@ -24,7 +24,7 @@ def movie_rename(file_name):
     try:
         open(renaming_history_file_name)
     except IOError:
-        print("File not accessible or doesn't exist")
+        print("File not accessible or doesn't exist. \nCreating a new file.")
     finally:
         file = open(renaming_history_file_name, "a+")
         file.write("Input: " + file_name + " \n")
@@ -44,24 +44,33 @@ def movie_rename(file_name):
         sound_format = audio_found.group(1).strip().replace(" ", ".")
         print("Found Sound Format: " + sound_format)
         file_name = file_name.replace(audio_found.group(1), sound_format + " ")
+    else:
+        print("Error: Sound format not found!")
 
     resolution_found = re.search(regex_resolutions, file_name)  # Search for resolution item in file name.
     if resolution_found:  # Putting a square bracket in front of the resolution if it is found.
         resolution = resolution_found.group(1).strip()
         print("Found Resolution: " + resolution)
         file_name = file_name.replace(resolution_found.group(1), "[" + resolution + " ")
+    else:
+        print("Error: Resolution not found!")
 
-    year_discovered = re.search(regex_year, file_name)  # Search for year in file name.
-    if year_discovered:  # Padding the year if it's found with parentheses.
-        year = year_discovered.group(1).strip()
+    year_found = re.search(regex_year, file_name)  # Search for year in file name.
+    if year_found:  # Padding the year if it's found with parentheses.
+        year = year_found.group(1).strip()
         print("Found Year: " + year)
-        file_name = file_name.replace(year_discovered.group(1), " (" + year + ")")
+        file_name = file_name.replace(year, " (" + year + ")")
+    else:
+        print("Error: Year not found!")
 
     anomaly_found = re.search(regex_anomaly, file_name)  # Search for misplaced item in file name.
-    if anomaly_found:  # Removing any anomalies found between the year and start of metadata.
-        anomaly = anomaly_found.group(1)
-        print("Found Anomaly: " + anomaly)
-        file_name = file_name.replace(anomaly, ") [")
+    if anomaly_found:  # Moving any anomalies found between the year and start of metadata to the end.
+        anomaly = anomaly_found.group(2)        # Group 1 = ")x[
+        print("Found Anomaly: " + anomaly)        # Group 2 = "x"
+        # print("Group 1 = " + anomaly_found.group(1) + "\nGroup 2 = " + anomaly_found.group(2))        # Print info.
+        file_name = file_name.replace(anomaly_found.group(1), ") [").replace("]", "") + " " + anomaly
+    else:
+        print("Error: Anomaly not found!")
 
     while file_name[-1] == " ":  # Remove trailing whitespaces.
         if file_name[-1].isalnum():
@@ -73,7 +82,7 @@ def movie_rename(file_name):
         if "  " not in file_name:
             break
         else:
-            file_name.replace("  ", " ")
+            file_name = file_name.replace("  ", " ")
 
     file_name = file_name.replace(")[", ") [")  # Adjusting the spacing between year and metadata.
 
